@@ -1236,7 +1236,7 @@
         return [...found];
       }
 
-      // ====== 打标文件名添加纯数字时间戳（月日时分秒） ======
+      // ====== 打标文件名添加时间戳（英文冒号） ======
       async function markFileWithCamouflage(file, items) {
         const ab = await file.arrayBuffer();
         const zip = await JSZip.loadAsync(ab);
@@ -1245,15 +1245,16 @@
           type: 'blob', compression: 'DEFLATE',
           compressionOptions: { level: 6 }
         });
-        // 生成纯数字时间戳后缀，格式如：1001182010（月日时分秒）
+        // 生成时间戳后缀，格式如：250101 11:23:10
         const now = new Date();
         const pad = n => String(n).padStart(2, '0');
+        const yy = String(now.getFullYear()).slice(-2); // 取年份后两位
         const mm = pad(now.getMonth() + 1);
         const dd = pad(now.getDate());
         const hh = pad(now.getHours());
         const mi = pad(now.getMinutes());
         const ss = pad(now.getSeconds());
-        const timestamp = `${mm}${dd}${hh}${mi}${ss}`;
+        const timestamp = `${yy}${mm}${dd} ${hh}:${mi}:${ss}`;
         // 在文件名后加上时间戳（保留原扩展名）
         const dotIdx = file.name.lastIndexOf('.');
         let newName;
@@ -2842,77 +2843,51 @@
         log('↩️ 已清除音效包');
       });
 
-      // ====== 修改：替换音效支持 bds 和 bdi 两种路径 ======
-      async function replaceAudioInSkin(zip, audioFiles, sourceFileName) {
+      // =========================================================
+      // 修复：音效替换核心函数
+      // 支持 .bdi（路径 skin/light/skin/res 和 skin/dark/skin/res）
+      // 支持 .bds（路径 xxx/light/res 和 xxx/dark/res，xxx 为文件名前缀）
+      // 关键：保留原始路径完全不变，只替换音频文件内容
+      // =========================================================
+      async function replaceAudioInSkin(zip, audioFiles, originalFileName) {
         const outZip = new JSZip();
         const allFiles = Object.keys(zip.files);
+        // 建立音频文件映射（文件名小写 → blob）
         const audioMap = {};
         for (const af of audioFiles) {
           const blob = await af.entry.async('blob');
-          audioMap[af.name] = blob;
+          audioMap[af.name.toLowerCase()] = blob;
         }
 
-        // 判断来源文件类型
-        const lowerName = (sourceFileName || '').toLowerCase();
-        const isBds = lowerName.endsWith('.bds');
-        // 对于 bds，提取基础名（去掉 .bds 后缀），用于匹配 xxx/light/res/ 和 xxx/dark/res/
-        let bdsBaseName = '';
-        if (isBds) {
-          bdsBaseName = sourceFileName.replace(/\.bds$/i, '');
+        // 从原始文件名提取 .bds 的顶层文件夹名（如 xxx.bds → xxx）
+        let bdsTopFolder = null;
+        if (originalFileName && originalFileName.toLowerCase().endsWith('.bds')) {
+          bdsTopFolder = originalFileName.replace(/\.bds$/i, '');
         }
 
         for (const key of allFiles) {
           const entry = zip.files[key];
           if (entry.dir) continue;
-          let originPath = key.replace(/^\.\//, '').replace(/^\//, '');
+          const originPath = key.replace(/^\.\//, '').replace(/^\//, '');
           const fileName = originPath.split('/').pop();
           const lowerFileName = fileName.toLowerCase();
 
           // 判断是否为音频文件
-          const isAudio = lowerFileName.endsWith('.aiff') || lowerFileName.endsWith('.ogg');
-          if (!isAudio) {
-            const data = await entry.async('blob');
-            outZip.file(originPath, data);
-            continue;
-          }
+          const isAudio = lowerFileName.endsWith('.aiff') || lowerFileName.endsWith('.ogg') || lowerFileName.endsWith('.wav');
 
-          let shouldReplace = false;
-
-          if (isBds) {
-            // ===== .bds 模式：匹配 xxx/light/res/ 和 xxx/dark/res/ =====
-            if (bdsBaseName) {
-              const lightPrefix = bdsBaseName + '/light/res/';
-              const darkPrefix = bdsBaseName + '/dark/res/';
-              if (originPath.startsWith(lightPrefix) || originPath.startsWith(darkPrefix)) {
-                shouldReplace = true;
-              }
-            }
-            // 兼容另一种可能的 bds 路径结构（不带前缀直接 light/res/ 或 dark/res/）
-            if (!shouldReplace) {
-              if (originPath.match(/^light\/res\//i) || originPath.match(/^dark\/res\//i)) {
-                shouldReplace = true;
-              }
-            }
-          } else {
-            // ===== .bdi 模式：保持原有路径逻辑不变 =====
-            if (originPath.match(/\/?skin\/(light|dark)\/skin\/res\//i)) {
-              shouldReplace = true;
-            }
-          }
-
-          if (shouldReplace) {
-            let matchedKey = null;
-            for (const audioName of Object.keys(audioMap)) {
-              if (audioName.toLowerCase() === lowerFileName) { matchedKey = audioName; break; }
-            }
+          if (isAudio) {
+            // 尝试匹配音效包中的同名文件（大小写不敏感）
+            const matchedKey = audioMap[lowerFileName];
             if (matchedKey) {
-              outZip.file(originPath, audioMap[matchedKey]);
+              // 直接使用原始路径 key，不做任何路径改动
+              outZip.file(key, matchedKey);
               continue;
             }
           }
 
+          // 非音频文件或未匹配到：原样复制，保留原始路径
           const data = await entry.async('blob');
-          outZip.file(originPath, data);
+          outZip.file(key, data);
         }
         return outZip;
       }
@@ -3911,7 +3886,7 @@
                 zip.file(darkPath, processedDark);
               }
               const suffix = rongcaiCurrentMode === 'mode1' ? '融合底' : '彩底';
-              // === 修改：智能替换文件名中的“彩底/融合底” ===
+              // === 智能替换文件名中的“彩底/融合底” ===
               const baseName = fileName.slice(0, fileName.lastIndexOf('.'));
               let newBaseName = baseName;
               if (rongcaiCurrentMode === 'mode1') {
