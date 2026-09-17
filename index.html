@@ -308,7 +308,6 @@
     .mark-copy-btn.copied { background: #15803d; color: #fff; border-color: #15803d; }
     .file-stat { font-size: 0.85rem; padding: 2px 0; color: var(--text-secondary); }
 
-    /* ===== 文本编辑器 ===== */
     .text-editor-panel { margin-top: 20px; border-top: 2px solid var(--border-subtle); padding-top: 16px; }
     .text-editor-title { font-size: 16px; font-weight: 600; color: var(--text-primary);
       margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
@@ -326,11 +325,9 @@
     .text-editor-btn.save-btn { background: #2a5a3e; }
     .text-editor-btn.save-btn:hover:not(:disabled) { background: #1f4a2e; }
 
-    /* ===== 编辑器主体（高亮层 + 透明 textarea） ===== */
     .editor-container { border: 1px solid var(--border-subtle); border-radius: 14px;
       background: var(--bg-card); overflow: hidden; }
     .editor-wrap { position: relative; width: 100%; }
-    /* 高亮层：显示彩色文字和背景 */
     .editor-highlight {
       position: absolute; top: 0; left: 0; right: 0; bottom: 0;
       padding: 14px 16px; font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
@@ -338,7 +335,6 @@
       overflow: hidden; pointer-events: none; tab-size: 4;
       color: var(--text-primary);
     }
-    /* 匹配高亮 mark —— 只保留平面底色，去掉边框/阴影/圆角 */
     .editor-highlight mark {
       background: #ffe066; color: #000;
       padding: 0; border: none; border-radius: 0; box-shadow: none;
@@ -347,7 +343,6 @@
       background: #ff8c00; color: #fff;
       padding: 0; border: none; border-radius: 0; box-shadow: none;
     }
-    /* textarea 透明叠加，负责编辑和输入 */
     .editor-textarea {
       position: relative; z-index: 2;
       width: 100%; min-height: 300px; padding: 14px 16px;
@@ -362,7 +357,6 @@
     .editor-textarea::selection { background: rgba(59,124,255,0.3); color: transparent; }
     .editor-textarea:focus { background: transparent; }
 
-    /* 底部查找替换栏 */
     .editor-find-bar { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center;
       padding: 10px 14px; background: var(--bg-tabs); border-top: 1px solid var(--border-subtle);
       border-radius: 0 0 14px 14px; }
@@ -388,7 +382,6 @@
     .editor-status.done { color: var(--color-success); background: var(--color-success-bg); }
     .editor-status.error { color: #c0392b; background: var(--color-error-bg); }
 
-    /* ===== 文件选择弹窗 ===== */
     .editor-file-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.4); z-index: 999; justify-content: center; align-items: center; }
     .editor-file-modal.show { display: flex; }
@@ -450,7 +443,6 @@
         <span class="direction-badge" id="directionBadge">→ iOS</span>
       </div>
 
-      <!-- ===== 新增：继续编辑按钮（共享文件池） ===== -->
       <div class="action-row" style="margin-top: 4px;">
         <button class="action-btn secondary" id="continueEditBtn" style="background: #e8f0fe; color: #1a4c8c; border: 1px solid #a8c7fa;" disabled>🔄 继续编辑（将当前结果导入所有工具）</button>
       </div>
@@ -493,6 +485,10 @@
         <button class="mark-inline-btn mark-check" id="btnCheck">🔍 查验标记</button>
         <button class="mark-inline-btn mark-download" id="btnDownloadMarked" disabled>📥 下载</button>
         <span class="mark-status" id="markStatus">⏳ 等待文件</span>
+        <label style="display:flex;align-items:center;gap:6px;margin-left:auto;font-weight:500;color:var(--text-secondary);font-size:14px;cursor:pointer;">
+          <input type="checkbox" id="optTimeStamp" style="width:16px;height:16px;accent-color:var(--color-accent);cursor:pointer;">
+          ⏱️ 时间输出
+        </label>
       </div>
       <div class="mark-result-inline" id="checkResult">
         <strong>📋 查验结果：</strong>
@@ -532,7 +528,6 @@
         </div>
       </div>
 
-      <!-- ===== 文本编辑器 ===== -->
       <div class="text-editor-panel" id="textEditorPanel">
         <div class="text-editor-title">📝 文本编辑器 (Info.txt / default.css)</div>
         <div class="text-editor-file-bar">
@@ -561,7 +556,6 @@
         </div>
       </div>
 
-      <!-- 文件选择弹窗 -->
       <div class="editor-file-modal" id="editorFileModal">
         <div class="editor-file-modal-content">
           <h3>📂 选择要编辑的文件</h3>
@@ -600,7 +594,6 @@
         <input type="file" id="encryptFileInput" accept=".zip,.bds,.bdi,application/zip,application/octet-stream,application/x-zip-compressed" multiple>
       </div>
 
-      <!-- ===== 新增：加密区也可以从共享池导入文件 ===== -->
       <div class="action-row" style="margin-bottom: 8px;">
         <button class="action-btn secondary" id="encryptContinueBtn" style="background: #e8f0fe; color: #1a4c8c; border: 1px solid #a8c7fa; flex: 0 1 auto;" disabled>📥 从“继续编辑”池导入文件</button>
       </div>
@@ -621,7 +614,6 @@
       </div>
     </div>
 
-    <!-- ===================== 融彩转换（新版） ===================== -->
     <div class="section" id="sectionRongcai">
       <div id="modePanel">
         <strong>请选择加工模式：</strong><br>
@@ -636,7 +628,6 @@
         <button onclick="document.getElementById('rongcaiFileInput').click()" style="background:#2e3b4e; border:none; padding:8px 20px; border-radius:40px; color:#fff; font-weight:500; cursor:pointer;">选择文件 (支持多选)</button>
       </div>
 
-      <!-- ===== 新增：融彩区也可以从共享池导入文件 ===== -->
       <div class="action-row" style="margin-bottom: 8px;">
         <button class="action-btn secondary" id="rongcaiContinueBtn" style="background: #e8f0fe; color: #1a4c8c; border: 1px solid #a8c7fa; flex: 0 1 auto;" disabled>📥 从“继续编辑”池导入文件</button>
       </div>
@@ -683,7 +674,29 @@
 
   <script>
     (function() {
-      // ===================== 主功能区切换 =====================
+      const optTimeStamp = document.getElementById('optTimeStamp');
+      function getTimeStampSuffix() {
+        if (!optTimeStamp || !optTimeStamp.checked) return '';
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        const yy = String(now.getFullYear()).slice(-2);
+        const mm = pad(now.getMonth() + 1);
+        const dd = pad(now.getDate());
+        const hh = pad(now.getHours());
+        const mi = pad(now.getMinutes());
+        const ss = pad(now.getSeconds());
+        return `${yy}${mm}${dd}${hh}${mi}${ss}`;
+      }
+      function applyTimeStampToName(originalName) {
+        const suffix = getTimeStampSuffix();
+        if (!suffix) return originalName;
+        const dotIdx = originalName.lastIndexOf('.');
+        if (dotIdx > 0) {
+          return originalName.slice(0, dotIdx) + suffix + originalName.slice(dotIdx);
+        }
+        return originalName + suffix;
+      }
+
       const mainTabs = document.querySelectorAll('.main-tab');
       const sections = {
         skin: document.getElementById('sectionSkin'),
@@ -701,7 +714,6 @@
         });
       });
 
-      // ===================== 皮肤工具 DOM =====================
       const dropZone = document.getElementById('dropZone');
       const fileInput = document.getElementById('fileInput');
       const fileStatus = document.getElementById('fileStatus');
@@ -736,7 +748,6 @@
       const optCompress = document.getElementById('optCompress');
       const executeSelectedBtn = document.getElementById('executeSelectedBtn');
 
-      // ===== 新增 DOM：继续编辑按钮 =====
       const continueEditBtn = document.getElementById('continueEditBtn');
       const encryptContinueBtn = document.getElementById('encryptContinueBtn');
       const rongcaiContinueBtn = document.getElementById('rongcaiContinueBtn');
@@ -768,7 +779,6 @@
       const checkResult = document.getElementById('checkResult');
       const resultContent = document.getElementById('resultContent');
 
-      // ===== 文本编辑器 DOM =====
       const editorFileSelect = document.getElementById('editorFileSelect');
       const editorLoadBtn = document.getElementById('editorLoadBtn');
       const editorSaveBtn = document.getElementById('editorSaveBtn');
@@ -781,7 +791,6 @@
       const editorReplaceBtn = document.getElementById('editorReplaceBtn');
       const editorReplaceAllBtn = document.getElementById('editorReplaceAllBtn');
       const editorStatus = document.getElementById('editorStatus');
-      // 弹窗
       const editorFileModal = document.getElementById('editorFileModal');
       const editorFileModalList = document.getElementById('editorFileModalList');
       const editorFileModalClose = document.getElementById('editorFileModalClose');
@@ -801,24 +810,18 @@
       let savedMarkContent = '';
       let isMarked = false;
 
-      // ===== 文本编辑器状态 =====
       let editorCurrentZip = null;
       let editorCurrentZipName = '';
       let editorCurrentFilePath = '';
       let editorModified = false;
 
-      // ===== 自动保存相关 =====
       let editorPendingChanges = {};
       let editorHasLoadedFile = false;
 
-      // ===== 查找状态 =====
       let currentSearchMatches = [];
       let currentSearchIndex = -1;
 
-      // =============================================================
-      // ===== 新增：全局共享文件池（“继续编辑”机制） =====
-      // =============================================================
-      let sharedFiles = []; // [{ name, file(File), source }]
+      let sharedFiles = [];
 
       function setSharedFiles(files, source) {
         sharedFiles = files.map(f => ({
@@ -841,14 +844,12 @@
         if (rongcaiContinueBtn) rongcaiContinueBtn.disabled = !has;
       }
 
-      // 将共享池里的文件应用到“皮肤工具”
       function applySharedToSkin() {
         if (sharedFiles.length === 0) { alert('暂存池为空，请先处理文件并点击“继续编辑”'); return; }
         const files = sharedFiles.map(s => s.file);
         selectedFiles = files;
         compressedFiles = [];
         isCompressed = false;
-        // 重置编辑状态
         editorCurrentZip = null;
         editorCurrentFilePath = '';
         editorPendingChanges = {};
@@ -861,7 +862,6 @@
         log('🔒 标记系统已就绪');
       }
 
-      // 将共享池应用到加密区
       function applySharedToEncrypt() {
         if (sharedFiles.length === 0) { alert('暂存池为空，请先处理文件并点击“继续编辑”'); return; }
         const files = sharedFiles.map(s => s.file);
@@ -869,7 +869,6 @@
         encryptLog('📥 已从共享池导入 ' + files.length + ' 个文件');
       }
 
-      // 将共享池应用到融彩区
       function applySharedToRongcai() {
         if (sharedFiles.length === 0) { alert('暂存池为空，请先处理文件并点击“继续编辑”'); return; }
         const files = sharedFiles.map(s => s.file);
@@ -884,41 +883,30 @@
         }
       }
 
-      // 绑定按钮
       if (continueEditBtn) {
-        continueEditBtn.addEventListener('click', () => {
-          applySharedToSkin();
-        });
+        continueEditBtn.addEventListener('click', () => { applySharedToSkin(); });
       }
       if (encryptContinueBtn) {
-        encryptContinueBtn.addEventListener('click', () => {
-          applySharedToEncrypt();
-        });
+        encryptContinueBtn.addEventListener('click', () => { applySharedToEncrypt(); });
       }
       if (rongcaiContinueBtn) {
-        rongcaiContinueBtn.addEventListener('click', () => {
-          applySharedToRongcai();
-        });
+        rongcaiContinueBtn.addEventListener('click', () => { applySharedToRongcai(); });
       }
 
-      // 初始化按钮状态
       refreshContinueButtons();
 
-      // 核心：一个通用的“把结果放入共享池”的函数
       function pushToShared(files, source) {
         if (!files || files.length === 0) return;
         setSharedFiles(files, source);
         log('📥 已将 ' + files.length + ' 个文件暂存到“继续编辑”池（来源：' + source + '）');
       }
 
-      // ===== 同步 textarea 滚动到高亮层 =====
       function syncScroll() {
         editorHighlight.scrollTop = editorTextarea.scrollTop;
         editorHighlight.scrollLeft = editorTextarea.scrollLeft;
       }
       editorTextarea.addEventListener('scroll', syncScroll);
 
-      // ===== 渲染高亮层 =====
       function renderHighlight() {
         const content = editorTextarea.value;
         const searchText = editorFindInput.value;
@@ -951,9 +939,6 @@
         syncScroll();
       }
 
-      /* =========================================================
-       *  打标核心
-       * ========================================================= */
       const B36 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
       function textToCode(text) {
@@ -1236,7 +1221,6 @@
         return [...found];
       }
 
-      // ====== 打标文件名添加时间戳（英文冒号） ======
       async function markFileWithCamouflage(file, items) {
         const ab = await file.arrayBuffer();
         const zip = await JSZip.loadAsync(ab);
@@ -1245,26 +1229,7 @@
           type: 'blob', compression: 'DEFLATE',
           compressionOptions: { level: 6 }
         });
-        // 生成时间戳后缀，格式如：250101 11:23:10
-        const now = new Date();
-        const pad = n => String(n).padStart(2, '0');
-        const yy = String(now.getFullYear()).slice(-2); // 取年份后两位
-        const mm = pad(now.getMonth() + 1);
-        const dd = pad(now.getDate());
-        const hh = pad(now.getHours());
-        const mi = pad(now.getMinutes());
-        const ss = pad(now.getSeconds());
-        const timestamp = `${yy}${mm}${dd} ${hh}:${mi}:${ss}`;
-        // 在文件名后加上时间戳（保留原扩展名）
-        const dotIdx = file.name.lastIndexOf('.');
-        let newName;
-        if (dotIdx > 0) {
-          const base = file.name.slice(0, dotIdx);
-          const ext = file.name.slice(dotIdx);
-          newName = base + timestamp + ext;
-        } else {
-          newName = file.name + timestamp;
-        }
+        const newName = applyTimeStampToName(file.name);
         return new File([outBlob], newName, { type: file.type || 'application/zip' });
       }
 
@@ -1285,7 +1250,6 @@
         return await markFileWithCamouflage(file, items);
       }
 
-      // ===================== 工具函数 =====================
       function log(msg) {
         logBox.textContent += msg + '\n';
         logBox.scrollTop = logBox.scrollHeight;
@@ -1335,7 +1299,6 @@
           btnMark.disabled = false;
           markStatus.textContent = '📁 ' + files.length + ' 个文件';
           markStatus.className = 'mark-status';
-          // 更新编辑器下拉框
           editorFileSelect.innerHTML = '<option value="">-- 请选择文件 --</option>' +
             files.map((f, i) => `<option value="${i}">${escapeHtml(f.name)}</option>`).join('');
           editorLoadBtn.disabled = true;
@@ -1367,7 +1330,6 @@
           btnMark.disabled = true;
           markStatus.textContent = '⏳ 等待文件';
           markStatus.className = 'mark-status';
-          // 清空编辑器
           editorFileSelect.innerHTML = '<option value="">-- 请先上传皮肤包 --</option>';
           editorLoadBtn.disabled = true;
           editorSaveBtn.disabled = true;
@@ -1388,7 +1350,6 @@
         }
       }
 
-      // ===== 文本编辑器逻辑 =====
       editorFileSelect.addEventListener('change', function() {
         const idx = this.value;
         if (idx === '') { editorLoadBtn.disabled = true; return; }
@@ -1661,11 +1622,9 @@
             type: 'blob', compression: 'DEFLATE',
             compressionOptions: { level: 6 }
           });
-          const outName = editorCurrentZipName;
-          // ===== 新增：自动放入共享池 =====
+          const outName = applyTimeStampToName(editorCurrentZipName);
           const outFile = new File([outBlob], outName, { type: 'application/zip' });
           setSharedFiles([outFile], '文本编辑器');
-          // 同时下载
           saveAs(outBlob, outName);
           editorPendingChanges = {};
           editorModified = false;
@@ -1678,7 +1637,6 @@
         }
       });
 
-      // ===== 原有逻辑 =====
       btnMark.addEventListener('click', async () => {
         const markValue = markText.value.trim();
         if (!markValue) { alert('请输入标记内容！'); return; }
@@ -1702,7 +1660,6 @@
           compressedFiles = [];
           isCompressed = false;
           updateFileStatus(selectedFiles);
-          // ===== 新增：自动放入共享池 =====
           setSharedFiles(selectedFiles, '打标');
           markStatus.textContent = '✅ ' + files.length + ' 个文件标记已植入: ' + markValue;
           markStatus.className = 'mark-status done';
@@ -1855,7 +1812,6 @@
         if (files.length === 0) { log('⚠️ 没有可处理的文件'); return; }
         const markItems = doMark && markContent ? parseMarkInput(markContent) : null;
 
-        // 用于收集最终输出，方便放入共享池
         const outputs = [];
 
         if (files.length === 1) {
@@ -1882,9 +1838,10 @@
                 outBlob = new Blob([await ensured.arrayBuffer()], { type: ensured.type });
                 processedFile = ensured;
               }
-              outputs.push(new File([outBlob], processedFile.name));
-              saveAs(outBlob, processedFile.name);
-              log('✅ 处理完成: ' + processedFile.name);
+              const outName = applyTimeStampToName(processedFile.name);
+              outputs.push(new File([outBlob], outName));
+              saveAs(outBlob, outName);
+              log('✅ 处理完成: ' + outName);
               setSharedFiles(outputs, '替换demo+其他');
               return;
             }
@@ -1901,9 +1858,10 @@
                 finalFile = await ensureMarkExists(finalFile);
                 outBlob = new Blob([await finalFile.arrayBuffer()], { type: finalFile.type });
               }
-              outputs.push(finalFile);
-              saveAs(outBlob, finalFile.name);
-              log('✅ 转换完成: ' + finalFile.name);
+              const outName = applyTimeStampToName(finalFile.name);
+              outputs.push(new File([outBlob], outName));
+              saveAs(outBlob, outName);
+              log('✅ 转换完成: ' + outName);
               setSharedFiles(outputs, '格式转换');
               return;
             }
@@ -1924,9 +1882,10 @@
                 const ensured = await ensureMarkExists(tempFile);
                 outBlob = new Blob([await ensured.arrayBuffer()], { type: ensured.type });
               }
-              outputs.push(new File([outBlob], file.name));
-              saveAs(outBlob, file.name);
-              log('✅ 替换demo完成: ' + file.name);
+              const outName = applyTimeStampToName(file.name);
+              outputs.push(new File([outBlob], outName));
+              saveAs(outBlob, outName);
+              log('✅ 替换demo完成: ' + outName);
               setSharedFiles(outputs, '替换demo');
               return;
             }
@@ -1963,13 +1922,15 @@
               if (savedMarkContent) {
                 finalFile = await ensureMarkExists(finalFile);
               }
-              resultZip.file(finalFile.name, finalFile);
+              const timeStampedName = applyTimeStampToName(finalFile.name);
+              resultZip.file(timeStampedName, finalFile);
               successCount++;
-              log('✅ [' + (idx + 1) + '/' + files.length + '] 处理成功: ' + finalFile.name);
+              log('✅ [' + (idx + 1) + '/' + files.length + '] 处理成功: ' + timeStampedName);
             } else if (markItems && markItems.length > 0) {
-              resultZip.file(processedFile.name, processedFile);
+              const timeStampedName = applyTimeStampToName(processedFile.name);
+              resultZip.file(timeStampedName, processedFile);
               successCount++;
-              log('✅ [' + (idx + 1) + '/' + files.length + '] 打标成功: ' + processedFile.name);
+              log('✅ [' + (idx + 1) + '/' + files.length + '] 打标成功: ' + timeStampedName);
             } else {
               log('⚠️ [' + (idx + 1) + '/' + files.length + '] 未选择有效操作');
               failCount++;
@@ -1989,7 +1950,6 @@
           if (doCompress) suffix.push('压缩');
           const zipName = '批量_' + suffix.join('+') + '_' + successCount + '个文件.zip';
           saveAs(outBlob, zipName);
-          // 放入共享池，方便继续编辑
           const outFile = new File([outBlob], zipName, { type: 'application/zip' });
           setSharedFiles([outFile], '批量处理');
           log('✅ 批量处理完成，成功 ' + successCount + '，失败 ' + failCount);
@@ -2048,11 +2008,13 @@
             }
             const content = await newZip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE', compressionOptions: { level: 6 } });
             const compressedBlob = new Blob([content], { type: 'application/zip' });
-            newCompressedFiles.push({ name: file.name, blob: compressedBlob, originalSize: file.size, compressedSize: compressedBlob.size });
+            const outName = applyTimeStampToName(file.name);
+            newCompressedFiles.push({ name: outName, blob: compressedBlob, originalSize: file.size, compressedSize: compressedBlob.size });
             log('✅ ' + file.name + ' 压缩完成');
           } catch (err) {
             log('❌ ' + file.name + ' 压缩失败: ' + err.message);
-            newCompressedFiles.push({ name: file.name, blob: file, originalSize: file.size, compressedSize: file.size });
+            const outName = applyTimeStampToName(file.name);
+            newCompressedFiles.push({ name: outName, blob: file, originalSize: file.size, compressedSize: file.size });
           }
         }
         isCompressed = true;
@@ -2315,19 +2277,23 @@
             const content = await newZip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE', compressionOptions: { level: 6 } });
             const compressedBlob = new Blob([content], { type: 'application/zip' });
             let finalBlob = compressedBlob;
+            let finalName = applyTimeStampToName(file.name);
             if (savedMarkContent) {
               const items = parseMarkInput(savedMarkContent);
               if (items.length > 0) {
                 const tempFile = new File([compressedBlob], file.name);
-                finalBlob = await markFileWithCamouflage(tempFile, items);
+                const markedFile = await markFileWithCamouflage(tempFile, items);
+                finalBlob = markedFile;
+                finalName = applyTimeStampToName(file.name);
                 log('🔒 压缩后强制保留标记: ' + savedMarkContent);
               }
             }
-            compressedFiles.push({ name: finalBlob.name || file.name, blob: finalBlob, originalSize: file.size, compressedSize: finalBlob.size });
+            compressedFiles.push({ name: finalName, blob: finalBlob, originalSize: file.size, compressedSize: finalBlob.size });
             log('✅ ' + file.name + ' 压缩完成');
           } catch (err) {
             log('❌ ' + file.name + ' 压缩失败: ' + err.message);
-            compressedFiles.push({ name: file.name, blob: file, originalSize: file.size, compressedSize: file.size });
+            const outName = applyTimeStampToName(file.name);
+            compressedFiles.push({ name: outName, blob: file, originalSize: file.size, compressedSize: file.size });
           }
         }
         isCompressed = true;
@@ -2337,7 +2303,6 @@
         downloadCompressedBtn.disabled = false;
         updateFileStatus(selectedFiles);
         log('✅ 压缩完成');
-        // ===== 新增：压缩完成后自动放入共享池 =====
         const outFiles = compressedFiles.map(f => new File([f.blob], f.name));
         setSharedFiles(outFiles, '图片压缩');
         log('📥 压缩结果已暂存到“继续编辑”池');
@@ -2437,15 +2402,31 @@
           const lowerOrigin = originPath.toLowerCase();
           if (lowerOrigin.endsWith('rain.til') || lowerOrigin.endsWith('niarbv.til') || lowerOrigin.endsWith('ysdq.til')) continue;
           const lower = originPath.toLowerCase();
-          const isDemo = originPath.match(/\/?demo\.png$/i) !== null;
-          const isOuterSkinDemo = originPath.match(/^skin\/demo\.png$/i) !== null;
-          if (isDemo && !isOuterSkinDemo) continue;
+          const isDemo = /\/?demo\.png$/i.test(originPath);
+          const slashCount = (originPath.match(/\//g) || []).length;
+          const isOuterDemo = isDemo && slashCount <= 1;
+          if (isDemo && !isOuterDemo) continue;
+          const needConvert = (currentMode === 'bds2bdi' || currentMode === 'bdi2bds');
+          if (isOuterDemo) {
+            let targetDemoPath;
+            if (currentMode === 'bds2bdi') targetDemoPath = 'skin/demo.png';
+            else if (currentMode === 'bdi2bds') targetDemoPath = 'demo.png';
+            else {
+              targetDemoPath = originPath;
+            }
+            if (demoPngBlob) {
+              outZip.file(targetDemoPath, demoPngBlob);
+            } else {
+              const data = await entry.async('blob');
+              outZip.file(targetDemoPath, data);
+            }
+            continue;
+          }
           const isInfoTxt = lower.match(/\/?info\.txt$/i) !== null;
           let targetPath = null;
           let inLight = false;
           let inDark = false;
           let relativePath = originPath;
-          const needConvert = (currentMode === 'bds2bdi' || currentMode === 'bdi2bds');
           if (needConvert) {
             if (currentMode === 'bds2bdi') {
               if (originPath.match(/\/?light\//i)) { inLight = true; relativePath = originPath.replace(/^.*?light\//, ''); }
@@ -2453,11 +2434,6 @@
               else if (originPath.match(/\/?skin\/light\//i)) { inLight = true; relativePath = originPath.replace(/^.*?skin\/light\//, ''); }
               else if (originPath.match(/\/?skin\/dark\//i)) { inDark = true; relativePath = originPath.replace(/^.*?skin\/dark\//, ''); }
               else if (originPath.match(/\/?skin\//i) && !originPath.match(/\/?skin\/(light|dark)\//i)) { relativePath = originPath.replace(/^.*?skin\//, ''); }
-              if (isDemo && isOuterSkinDemo) {
-                if (demoPngBlob) outZip.file('skin/demo.png', demoPngBlob);
-                else { const data = await entry.async('blob'); outZip.file('skin/demo.png', data); }
-                continue;
-              }
               if (isInfoTxt) {
                 let text = await entry.async('string');
                 text = text.replace(/^AtomSkinName\s*=\s*light\s*,\s*dark\s*$/gim, '');
@@ -2482,20 +2458,11 @@
                 targetPath = originPath.startsWith('skin/') ? originPath : 'skin/' + originPath;
               }
               if (!targetPath) continue;
-              if (targetPath === 'skin/demo.png' && !demoPngBlob) {
-                const data = await entry.async('blob');
-                outZip.file(targetPath, data);
-                continue;
-              }
               let data = await entry.async('blob');
               let isCss = targetPath.endsWith('default.css');
-              let isTxtFile = targetPath.toLowerCase().endsWith('info.txt');
               if (isCss) {
                 let text = await entry.async('string');
                 text = text.replace(/ogg/g, 'aiff');
-                outZip.file(targetPath, text);
-              } else if (isTxtFile) {
-                let text = await entry.async('string');
                 outZip.file(targetPath, text);
               } else {
                 outZip.file(targetPath, data);
@@ -2505,11 +2472,6 @@
               else if (originPath.match(/\/?skin\/dark\//i)) { inDark = true; relativePath = originPath.replace(/^.*?skin\/dark\//, ''); }
               else if (originPath.match(/\/?light\//i)) { inLight = true; relativePath = originPath.replace(/^.*?light\//, ''); }
               else if (originPath.match(/\/?dark\//i)) { inDark = true; relativePath = originPath.replace(/^.*?dark\//, ''); }
-              if (isDemo && !inLight && !inDark) {
-                if (demoPngBlob) outZip.file('demo.png', demoPngBlob);
-                else { const data = await entry.async('blob'); outZip.file('demo.png', data); }
-                continue;
-              }
               if (isInfoTxt) {
                 let text = await entry.async('string');
                 text = text.replace(/^AtomSkinName\s*=\s*light\s*,\s*dark\s*$/gim, '');
@@ -2536,20 +2498,11 @@
                 targetPath = originPath;
               }
               if (!targetPath) continue;
-              if (targetPath === 'demo.png' && !demoPngBlob) {
-                const data = await entry.async('blob');
-                outZip.file(targetPath, data);
-                continue;
-              }
               let data = await entry.async('blob');
               let isCss = targetPath.endsWith('default.css');
-              let isTxtFile = targetPath.toLowerCase().endsWith('info.txt');
               if (isCss) {
                 let text = await entry.async('string');
                 text = text.replace(/aiff/g, 'ogg');
-                outZip.file(targetPath, text);
-              } else if (isTxtFile) {
-                let text = await entry.async('string');
                 outZip.file(targetPath, text);
               } else {
                 outZip.file(targetPath, data);
@@ -2561,8 +2514,12 @@
           }
         }
         if (demoPngBlob) {
-          const hasDemoInOut = Object.keys(outZip.files).some(f => f.match(/\/?demo\.png$/i));
-          if (!hasDemoInOut) {
+          const hasOuterDemo = Object.keys(outZip.files).some(f => {
+            const p = f.replace(/^\.\//, '').replace(/^\//, '').toLowerCase();
+            const sc = (p.match(/\//g) || []).length;
+            return /\/?demo\.png$/i.test(p) && sc <= 1;
+          });
+          if (!hasOuterDemo) {
             if (currentMode === 'bds2bdi') outZip.file('skin/demo.png', demoPngBlob);
             else if (currentMode === 'bdi2bds') outZip.file('demo.png', demoPngBlob);
             else {
@@ -2602,10 +2559,10 @@
                 log('🔒 转换后强制保留标记: ' + savedMarkContent);
               }
             }
-            saveAs(outBlob, finalFile.name);
-            const outFile = finalFile;
-            setSharedFiles([outFile], '格式转换');
-            log('✅ 转换成功，已暂存到“继续编辑”池: ' + outFile.name);
+            const outName = applyTimeStampToName(finalFile.name);
+            saveAs(outBlob, outName);
+            setSharedFiles([new File([outBlob], outName)], '格式转换');
+            log('✅ 转换成功，已暂存到“继续编辑”池: ' + outName);
           } catch (err) {
             log('❌ 转换失败: ' + err.message);
             alert('转换失败: ' + err.message);
@@ -2633,9 +2590,10 @@
                 finalFile = await markFileWithCamouflage(finalFile, items);
               }
             }
-            resultZip.file(finalFile.name, finalFile);
+            const timeStampedName = applyTimeStampToName(finalFile.name);
+            resultZip.file(timeStampedName, finalFile);
             successCount++;
-            log('✅ [' + (idx + 1) + '/' + filesToProcess.length + '] 转换成功: ' + finalFile.name);
+            log('✅ [' + (idx + 1) + '/' + filesToProcess.length + '] 转换成功: ' + timeStampedName);
           } catch (err) {
             failCount++;
             log('❌ [' + (idx + 1) + '/' + filesToProcess.length + '] ' + file.name + ' 转换失败: ' + err.message);
@@ -2644,9 +2602,9 @@
         if (successCount === 0) { alert('所有文件转换失败'); convertBtn.disabled = false; convertBtn.textContent = '⚡ 转换并下载'; return; }
         try {
           const resultBlob = await resultZip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
-          saveAs(resultBlob, '批量转换_' + outExt + '.zip');
-          const outFile = new File([resultBlob], '批量转换_' + outExt + '.zip', { type: 'application/zip' });
-          setSharedFiles([outFile], '批量转换');
+          const outZipName = '批量转换_' + outExt + '.zip';
+          saveAs(resultBlob, outZipName);
+          setSharedFiles([new File([resultBlob], outZipName)], '批量转换');
           log('✅ 批量转换完成，成功 ' + successCount + '，失败 ' + failCount + '，已暂存到共享池');
         } catch (err) {
           log('❌ 打包下载失败: ' + err.message);
@@ -2679,10 +2637,10 @@
                 log('🔒 替换demo后强制保留标记: ' + savedMarkContent);
               }
             }
-            saveAs(outBlob, finalFile.name);
-            const outFile = finalFile;
-            setSharedFiles([outFile], '替换demo');
-            log('✅ 替换demo成功，已暂存到“继续编辑”池: ' + finalFile.name);
+            const outName = applyTimeStampToName(finalFile.name);
+            saveAs(outBlob, outName);
+            setSharedFiles([new File([outBlob], outName)], '替换demo');
+            log('✅ 替换demo成功，已暂存到“继续编辑”池: ' + outName);
           } catch (err) {
             log('❌ ' + file.name + ' 失败: ' + err.message);
             alert('替换失败: ' + err.message);
@@ -2704,16 +2662,17 @@
                 finalFile = await markFileWithCamouflage(finalFile, items);
               }
             }
-            resultZip.file(finalFile.name, finalFile);
-            log('✅ [' + (idx + 1) + '/' + filesToProcess.length + '] 替换demo成功: ' + finalFile.name);
+            const timeStampedName = applyTimeStampToName(finalFile.name);
+            resultZip.file(timeStampedName, finalFile);
+            log('✅ [' + (idx + 1) + '/' + filesToProcess.length + '] 替换demo成功: ' + timeStampedName);
           } catch (err) {
             log('❌ [' + (idx + 1) + '/' + filesToProcess.length + '] ' + file.name + ' 失败: ' + err.message);
           }
         }
         const outBlob = await resultZip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
-        saveAs(outBlob, '仅替换demo_' + filesToProcess.length + '个文件.zip');
-        const outFile = new File([outBlob], '仅替换demo_' + filesToProcess.length + '个文件.zip', { type: 'application/zip' });
-        setSharedFiles([outFile], '批量替换demo');
+        const outZipName = '仅替换demo_' + filesToProcess.length + '个文件.zip';
+        saveAs(outBlob, outZipName);
+        setSharedFiles([new File([outBlob], outZipName)], '批量替换demo');
         log('✅ 完成，已暂存到共享池');
       });
 
@@ -2749,7 +2708,8 @@
         }
         if (totalAudio === 0) { alert('未提取到任何音效文件'); return; }
         const outBlob = await resultZip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
-        saveAs(outBlob, '音效提取_' + totalAudio + '个文件.zip');
+        const outZipName = '音效提取_' + totalAudio + '个文件.zip';
+        saveAs(outBlob, outZipName);
         log('✅ 音效提取完成，共 ' + totalAudio + ' 个音效文件');
       });
 
@@ -2843,49 +2803,28 @@
         log('↩️ 已清除音效包');
       });
 
-      // =========================================================
-      // 修复：音效替换核心函数
-      // 支持 .bdi（路径 skin/light/skin/res 和 skin/dark/skin/res）
-      // 支持 .bds（路径 xxx/light/res 和 xxx/dark/res，xxx 为文件名前缀）
-      // 关键：保留原始路径完全不变，只替换音频文件内容
-      // =========================================================
       async function replaceAudioInSkin(zip, audioFiles, originalFileName) {
         const outZip = new JSZip();
         const allFiles = Object.keys(zip.files);
-        // 建立音频文件映射（文件名小写 → blob）
         const audioMap = {};
         for (const af of audioFiles) {
           const blob = await af.entry.async('blob');
           audioMap[af.name.toLowerCase()] = blob;
         }
-
-        // 从原始文件名提取 .bds 的顶层文件夹名（如 xxx.bds → xxx）
-        let bdsTopFolder = null;
-        if (originalFileName && originalFileName.toLowerCase().endsWith('.bds')) {
-          bdsTopFolder = originalFileName.replace(/\.bds$/i, '');
-        }
-
         for (const key of allFiles) {
           const entry = zip.files[key];
           if (entry.dir) continue;
           const originPath = key.replace(/^\.\//, '').replace(/^\//, '');
           const fileName = originPath.split('/').pop();
           const lowerFileName = fileName.toLowerCase();
-
-          // 判断是否为音频文件
           const isAudio = lowerFileName.endsWith('.aiff') || lowerFileName.endsWith('.ogg') || lowerFileName.endsWith('.wav');
-
           if (isAudio) {
-            // 尝试匹配音效包中的同名文件（大小写不敏感）
             const matchedKey = audioMap[lowerFileName];
             if (matchedKey) {
-              // 直接使用原始路径 key，不做任何路径改动
               outZip.file(key, matchedKey);
               continue;
             }
           }
-
-          // 非音频文件或未匹配到：原样复制，保留原始路径
           const data = await entry.async('blob');
           outZip.file(key, data);
         }
@@ -2916,10 +2855,10 @@
                 log('🔒 音效替换后强制保留标记: ' + savedMarkContent);
               }
             }
-            saveAs(outBlob, finalFile.name);
-            const outFile = finalFile;
-            setSharedFiles([outFile], '音效替换');
-            log('✅ 音效替换成功，已暂存到“继续编辑”池: ' + finalFile.name);
+            const outName = applyTimeStampToName(finalFile.name);
+            saveAs(outBlob, outName);
+            setSharedFiles([new File([outBlob], outName)], '音效替换');
+            log('✅ 音效替换成功，已暂存到“继续编辑”池: ' + outName);
           } catch (err) {
             log('❌ 替换失败: ' + err.message);
             alert('替换失败: ' + err.message);
@@ -2944,16 +2883,17 @@
                 finalFile = await markFileWithCamouflage(finalFile, items);
               }
             }
-            resultZip.file(finalFile.name, finalFile);
-            log('✅ [' + (idx + 1) + '/' + filesToProcess.length + '] 替换成功: ' + finalFile.name);
+            const timeStampedName = applyTimeStampToName(finalFile.name);
+            resultZip.file(timeStampedName, finalFile);
+            log('✅ [' + (idx + 1) + '/' + filesToProcess.length + '] 替换成功: ' + timeStampedName);
           } catch (err) {
             log('❌ [' + (idx + 1) + '/' + filesToProcess.length + '] ' + file.name + ' 失败: ' + err.message);
           }
         }
         const outBlob = await resultZip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
-        saveAs(outBlob, '音效替换_' + filesToProcess.length + '个文件.zip');
-        const outFile = new File([outBlob], '音效替换_' + filesToProcess.length + '个文件.zip', { type: 'application/zip' });
-        setSharedFiles([outFile], '批量音效替换');
+        const outZipName = '音效替换_' + filesToProcess.length + '个文件.zip';
+        saveAs(outBlob, outZipName);
+        setSharedFiles([new File([outBlob], outZipName)], '批量音效替换');
         log('✅ 批量替换完成，已暂存到共享池');
         replaceAudioBtn.disabled = false;
         replaceAudioBtn.textContent = '🔊 替换音效并下载';
@@ -3087,7 +3027,7 @@
             if (verifyTrace === trace) {
               const ext = file.name.split('.').pop().toLowerCase();
               const baseName = file.name.replace(/\.[^.]+$/, '');
-              const outName = baseName + '_marked.' + ext;
+              const outName = applyTimeStampToName(baseName + '_marked.' + ext);
               saveAs(markedBlob, outName);
               successCount++;
               log('✅ 打标成功: ' + outName);
@@ -3104,7 +3044,7 @@
               if (verifyTrace === trace) {
                 const ext = file.name.split('.').pop().toLowerCase();
                 const baseName = file.name.replace(/\.[^.]+$/, '');
-                const outName = baseName + '_marked.' + ext;
+                const outName = applyTimeStampToName(baseName + '_marked.' + ext);
                 resultZip.file(outName, markedBlob);
                 successCount++;
                 log('✅ [' + (idx + 1) + '/' + selectedFontFiles.length + '] 打标成功: ' + file.name);
@@ -3229,7 +3169,6 @@
         fileInput.value = '';
       });
 
-      // ===================== 加密/解密 =====================
       const encryptModeTabs = document.getElementById('encryptModeTabs');
       const encryptDropZone = document.getElementById('encryptDropZone');
       const encryptFileInput = document.getElementById('encryptFileInput');
@@ -3463,7 +3402,7 @@
         const result = processEncryptWithChoice(data, file.name);
         return {
           processedBlob: new Blob([result.data], { type: 'application/octet-stream' }),
-          processedName: file.name,
+          processedName: applyTimeStampToName(file.name),
           localCount: result.localCount,
           centralCount: result.centralCount,
           method: result.method || 'pseudo'
@@ -3475,7 +3414,7 @@
         const result = processDecryptByFileType(data, file.name);
         return {
           processedBlob: new Blob([result.data], { type: 'application/octet-stream' }),
-          processedName: file.name,
+          processedName: applyTimeStampToName(file.name),
           localCount: result.localCount,
           centralCount: result.centralCount,
           method: result.method || 'pseudo'
@@ -3593,7 +3532,6 @@
         const hasPending = encryptFileItems.some(item => item.status === 'pending');
         encryptActionBtn.disabled = !hasPending;
         encryptDownloadAllBtn.disabled = !encryptFileItems.some(item => item.status === 'done');
-        // ===== 新增：加密/解密完成后，把结果放入共享池 =====
         const doneItems = encryptFileItems.filter(item => item.status === 'done' && item.processedBlob);
         if (doneItems.length > 0) {
           const outFiles = doneItems.map(item => new File([item.processedBlob], item.processedName || item.file.name));
@@ -3692,7 +3630,6 @@
       encryptClearLog();
       renderEncryptFileList();
 
-      // ===================== 融彩转换 =====================
       (function() {
         const rongcaiDropBox = document.getElementById('rongcaiDropBox');
         const rongcaiFileInput = document.getElementById('rongcaiFileInput');
@@ -3784,7 +3721,6 @@
           }
         }
 
-        // 暴露给全局，以便“从共享池导入”
         window.__rongcaiLoadFiles = rongcaiLoadFiles;
 
         async function rongcaiProcessImagePng(pngBlob, fillColorHex) {
@@ -3857,48 +3793,41 @@
             const fileName = rongcaiSourceFiles[i] ? rongcaiSourceFiles[i].name : `unknown_${i}.zip`;
             const ext = fileName.split('.').pop().toLowerCase();
             try {
-              let lightPath, darkPath;
-              if (ext === 'bdi') {
-                lightPath = "skin/light/skin/res/abj.png";
-                darkPath = "skin/dark/skin/res/abj.png";
-              } else if (ext === 'bds') {
-                const bareName = fileName.slice(0, -4);
-                lightPath = `${bareName}/light/res/abj.png`;
-                darkPath = `${bareName}/dark/res/abj.png`;
-              } else {
-                if (zip.file("skin/light/skin/res/abj.png")) {
-                  lightPath = "skin/light/skin/res/abj.png";
-                  darkPath = "skin/dark/skin/res/abj.png";
-                } else {
-                  const bareName = fileName.slice(0, -4);
-                  lightPath = `${bareName}/light/res/abj.png`;
-                  darkPath = `${bareName}/dark/res/abj.png`;
-                }
+              // ===== 方案A：自动遍历所有 abj.png，按路径里是否含 light/dark 段来判断 =====
+              const abjEntries = [];
+              for (const k of Object.keys(zip.files)) {
+                const e = zip.files[k];
+                if (e.dir) continue;
+                const base = k.split('/').pop().toLowerCase();
+                if (base === 'abj.png') abjEntries.push(k);
               }
-              if (zip.file(lightPath)) {
-                const lightBlob = await zip.file(lightPath).async("blob");
-                const processedLight = await rongcaiProcessImagePng(lightBlob, "#D2D5DB");
-                zip.file(lightPath, processedLight);
+              let processedCount = 0;
+              for (const abjPath of abjEntries) {
+                // 把路径拆成段，判断是否含独立的 light / dark 段
+                const segs = abjPath.split('/').map(s => s.toLowerCase());
+                const hasLight = segs.includes('light');
+                const hasDark = segs.includes('dark');
+                if (!hasLight && !hasDark) continue; // 既不在 light 也不在 dark，跳过
+                const blob = await zip.file(abjPath).async('blob');
+                const fillColor = hasDark ? '#2E2E2E' : '#D2D5DB'; // dark 填深色，light 填浅色
+                const processed = await rongcaiProcessImagePng(blob, fillColor);
+                zip.file(abjPath, processed);
+                processedCount++;
               }
-              if (zip.file(darkPath)) {
-                const darkBlob = await zip.file(darkPath).async("blob");
-                const processedDark = await rongcaiProcessImagePng(darkBlob, "#2E2E2E");
-                zip.file(darkPath, processedDark);
+              if (processedCount === 0) {
+                rongcaiLogMsg(`⚠️ ${fileName} 未找到 abj.png（跳过）`);
               }
+
               const suffix = rongcaiCurrentMode === 'mode1' ? '融合底' : '彩底';
-              // === 智能替换文件名中的“彩底/融合底” ===
               const baseName = fileName.slice(0, fileName.lastIndexOf('.'));
               let newBaseName = baseName;
               if (rongcaiCurrentMode === 'mode1') {
-                // 彩底转融合底：把“彩底”替换为“融合底”
                 newBaseName = baseName.replace(/彩底/g, '融合底');
               } else {
-                // 融合底转彩底：把“融合底”替换为“彩底”
                 newBaseName = baseName.replace(/融合底/g, '彩底');
               }
-              // 如果文件名已经包含了目标关键词，就不再添加后缀；否则保留原逻辑添加后缀
-              const alreadyHasSuffix = rongcaiCurrentMode === 'mode1' 
-                ? newBaseName.includes('融合底') 
+              const alreadyHasSuffix = rongcaiCurrentMode === 'mode1'
+                ? newBaseName.includes('融合底')
                 : newBaseName.includes('彩底');
               let outputName;
               if (alreadyHasSuffix) {
@@ -3906,6 +3835,7 @@
               } else {
                 outputName = `${newBaseName}-${suffix}.${ext}`;
               }
+              outputName = applyTimeStampToName(outputName);
               const zipBuf = await zip.generateAsync({ type: "arraybuffer", compression: "DEFLATE" });
               rongcaiOutputZips.push(new Blob([zipBuf], { type: 'application/zip' }));
               rongcaiOutputNames.push(outputName);
@@ -3928,7 +3858,6 @@
             rongcaiDlBtn.disabled = false;
             rongcaiLogMsg('📦 全部打包完成，可下载');
             rongcaiSetStatus(`处理完成：成功 ${rongcaiOutputZips.length} 个 ✅`, true);
-            // ===== 新增：融彩结果自动放入共享池 =====
             const outFiles = rongcaiOutputZips.map((blob, i) => new File([blob], rongcaiOutputNames[i]));
             setSharedFiles(outFiles, '融彩转换');
             rongcaiLogMsg('📥 处理结果已暂存到“继续编辑”池，可继续其他操作');
@@ -3978,7 +3907,6 @@
         rongcaiResetUI();
       })();
 
-      // ===== 初始化 =====
       clearLog();
       updateFileStatus(null);
       extractResult.classList.remove('show');
