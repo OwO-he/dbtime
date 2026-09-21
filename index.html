@@ -2756,7 +2756,7 @@
 
       audioReplaceArea.addEventListener('click', () => audioReplaceInput.click());
       audioReplaceArea.addEventListener('dragover', (e) => { e.preventDefault(); audioReplaceArea.classList.add('dragover'); });
-      audioReplaceArea.addEventListener('dragleave', () => { audioReplaceArea.classList.remove('dragover'); });
+      audioReplaceArea.addEventListener('dragleave', () => audioReplaceArea.classList.remove('dragover'));
       audioReplaceArea.addEventListener('drop', (e) => {
         e.preventDefault();
         audioReplaceArea.classList.remove('dragover');
@@ -3349,17 +3349,39 @@
         return localHeaders;
       }
 
-      function pseudoEncrypt(data) {
+      // ===== 以下为按第二个工具替换后的“统一伪加密”实现 =====
+      function getPseudoFlagsByExt(ext) {
+        if (ext === '.bds') return { local: 0x0000, central: 0x0009 };
+        return { local: 0x0001, central: 0x0001 };
+      }
+
+      function pseudoEncrypt(data, fileName) {
         const result = new Uint8Array(data);
-        const localHeaderSig = [0x50, 0x4B, 0x03, 0x04];
-        const centralDirSig = [0x50, 0x4B, 0x01, 0x02];
+        const ext = '.' + (fileName.split('.').pop() || '').toLowerCase();
+        const flags = getPseudoFlagsByExt(ext);
+        const localSig = [0x50, 0x4B, 0x03, 0x04];
+        const centralSig = [0x50, 0x4B, 0x01, 0x02];
         let lhCount = 0, cdCount = 0;
-        const localHeaders = findAllSequencesEnc(result, localHeaderSig);
-        for (const pos of localHeaders) { if (setEncryptFlag(result, pos, 6)) lhCount++; }
-        const centralDirs = findAllSequencesEnc(result, centralDirSig);
-        for (const pos of centralDirs) { if (setEncryptFlag(result, pos, 8)) cdCount++; }
+        for (const pos of findAllSequencesEnc(result, localSig)) {
+          const fo = pos + 6;
+          if (fo + 1 < result.length) {
+            result[fo] = flags.local & 0xFF;
+            result[fo + 1] = (flags.local >> 8) & 0xFF;
+            lhCount++;
+          }
+        }
+        for (const pos of findAllSequencesEnc(result, centralSig)) {
+          const fo = pos + 8;
+          if (fo + 1 < result.length) {
+            result[fo] = flags.central & 0xFF;
+            result[fo + 1] = (flags.central >> 8) & 0xFF;
+            cdCount++;
+          }
+        }
         return { data: result, lhCount, cdCount };
       }
+      // ===== 替换结束 =====
+
       function pseudoDecrypt(data) {
         const result = new Uint8Array(data);
         const localHeaderSig = [0x50, 0x4B, 0x03, 0x04];
@@ -3377,10 +3399,10 @@
         if (encryptType === 'bdiBdsSplit' && fileType === 'bds') {
           const result = bdsEncrypt(data);
           if (result) return { data: result.data, localCount: 0, centralCount: result.count, method: 'bds' };
-          const fallback = pseudoEncrypt(data);
+          const fallback = pseudoEncrypt(data, fileName);
           return { data: fallback.data, localCount: fallback.lhCount, centralCount: fallback.cdCount, method: 'pseudo' };
         } else {
-          const result = pseudoEncrypt(data);
+          const result = pseudoEncrypt(data, fileName);
           return { data: result.data, localCount: result.lhCount, centralCount: result.cdCount, method: 'pseudo' };
         }
       }
@@ -3793,7 +3815,6 @@
             const fileName = rongcaiSourceFiles[i] ? rongcaiSourceFiles[i].name : `unknown_${i}.zip`;
             const ext = fileName.split('.').pop().toLowerCase();
             try {
-              // ===== 方案A：自动遍历所有 abj.png，按路径里是否含 light/dark 段来判断 =====
               const abjEntries = [];
               for (const k of Object.keys(zip.files)) {
                 const e = zip.files[k];
@@ -3803,13 +3824,12 @@
               }
               let processedCount = 0;
               for (const abjPath of abjEntries) {
-                // 把路径拆成段，判断是否含独立的 light / dark 段
                 const segs = abjPath.split('/').map(s => s.toLowerCase());
                 const hasLight = segs.includes('light');
                 const hasDark = segs.includes('dark');
-                if (!hasLight && !hasDark) continue; // 既不在 light 也不在 dark，跳过
+                if (!hasLight && !hasDark) continue;
                 const blob = await zip.file(abjPath).async('blob');
-                const fillColor = hasDark ? '#2E2E2E' : '#D2D5DB'; // dark 填深色，light 填浅色
+                const fillColor = hasDark ? '#2E2E2E' : '#D2D5DB';
                 const processed = await rongcaiProcessImagePng(blob, fillColor);
                 zip.file(abjPath, processed);
                 processedCount++;
