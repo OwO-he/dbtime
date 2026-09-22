@@ -2402,12 +2402,18 @@
           const lowerOrigin = originPath.toLowerCase();
           if (lowerOrigin.endsWith('rain.til') || lowerOrigin.endsWith('niarbv.til') || lowerOrigin.endsWith('ysdq.til')) continue;
           const lower = originPath.toLowerCase();
-          const isDemo = /\/?demo\.png$/i.test(originPath);
-          const slashCount = (originPath.match(/\//g) || []).length;
-          const isOuterDemo = isDemo && slashCount <= 1;
-          if (isDemo && !isOuterDemo) continue;
+
+          // ===== 修改开始：bds2bdi 时只保留 bds 根目录的 demo.png，子目录 demo 全部丢弃 =====
+          const isDemo = /(^|\/)demo\.png$/i.test(originPath);
+          const normalizedForDemo = originPath.replace(/^\.\//, '').replace(/^\//, '');
+          const isRootDemo = isDemo && normalizedForDemo.toLowerCase() === 'demo.png';
+          if (isDemo && !isRootDemo) continue;
+          const isOuterDemo = isRootDemo;
+          // ===== 修改结束 =====
+
           const needConvert = (currentMode === 'bds2bdi' || currentMode === 'bdi2bds');
           if (isOuterDemo) {
+            // ===== 保持原映射：bds2bdi → skin/demo.png；bdi2bds → demo.png =====
             let targetDemoPath;
             if (currentMode === 'bds2bdi') targetDemoPath = 'skin/demo.png';
             else if (currentMode === 'bdi2bds') targetDemoPath = 'demo.png';
@@ -2514,6 +2520,7 @@
           }
         }
         if (demoPngBlob) {
+          // ===== 保持原逻辑：判断输出包里是否已有外层 demo =====
           const hasOuterDemo = Object.keys(outZip.files).some(f => {
             const p = f.replace(/^\.\//, '').replace(/^\//, '').toLowerCase();
             const sc = (p.match(/\//g) || []).length;
