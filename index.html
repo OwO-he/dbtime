@@ -2403,10 +2403,6 @@
           if (lowerOrigin.endsWith('rain.til') || lowerOrigin.endsWith('niarbv.til') || lowerOrigin.endsWith('ysdq.til')) continue;
           const lower = originPath.toLowerCase();
 
-          // ===== 修改开始：根据转换方向，只保留"源包正确位置"的 demo.png =====
-          // bds2bdi：只保留 bds 根目录 demo.png（路径严格等于 demo.png）
-          // bdi2bds：只保留 bdi 的 skin/demo.png（路径严格等于 skin/demo.png）
-          // 其余位置的 demo.png 全部丢弃
           const isDemo = /(^|\/)demo\.png$/i.test(originPath);
           const normalizedForDemo = originPath.replace(/^\.\//, '').replace(/^\//, '').toLowerCase();
           let isOuterDemo = false;
@@ -2419,7 +2415,6 @@
             isOuterDemo = isDemo && slashCount <= 1;
           }
           if (isDemo && !isOuterDemo) continue;
-          // ===== 修改结束 =====
 
           const needConvert = (currentMode === 'bds2bdi' || currentMode === 'bdi2bds');
           if (isOuterDemo) {
@@ -2546,6 +2541,67 @@
         return outZip;
       }
 
+      /* ============================================================
+       * ✅ 仅替换 demo.png —— 按格式决定保留哪一个，其余位置的 demo.png 删除，
+       *    其它任何文件 / 任何路径 100% 不动
+       *
+       *    规则：
+       *      - 若包内存在 skin/demo.png → 认为是 iOS 包，保留 skin/demo.png，
+       *        其余位置的 demo.png 丢弃；替换目标内容为新的 demo.png。
+       *      - 否则认为是安卓包，保留根目录 demo.png，
+       *        其余位置的 demo.png 丢弃；替换目标内容为新的 demo.png。
+       * ============================================================ */
+      async function processZipReplaceDemoOnly(zip) {
+        const demoPngBlob = customDemoCompressedBlob || customDemoBlob;
+        if (!demoPngBlob) {
+          throw new Error('未选择替换用的 demo.png 图片');
+        }
+
+        const outZip = new JSZip();
+        let replacedCount = 0;
+        let removedCount = 0;
+
+        // 判断是 iOS 包还是安卓包
+        const allFiles = Object.keys(zip.files).filter(k => !zip.files[k].dir);
+        const hasSkinDemo = allFiles.some(k => {
+          const p = k.replace(/^\.\//, '').replace(/^\//, '').toLowerCase();
+          return p === 'skin/demo.png';
+        });
+        const isIOS = hasSkinDemo;
+
+        const targetDemoPath = isIOS ? 'skin/demo.png' : 'demo.png';
+
+        for (const key of Object.keys(zip.files)) {
+          const entry = zip.files[key];
+
+          if (entry.dir) {
+            outZip.folder(key);
+            continue;
+          }
+
+          const normalized = key.replace(/^\.\//, '').replace(/^\//, '').toLowerCase();
+          const baseName = normalized.split('/').pop();
+
+          if (baseName === 'demo.png') {
+            if (normalized === targetDemoPath) {
+              // 目标位置：就地替换（保持原 key 拼写）
+              outZip.file(key, demoPngBlob);
+              replacedCount++;
+            } else {
+              // 其他位置的 demo.png：丢弃
+              removedCount++;
+            }
+            continue;
+          }
+
+          // 其他文件：路径、内容 100% 原样
+          const data = await entry.async('blob');
+          outZip.file(key, data);
+        }
+
+        return { zip: outZip, replacedCount, removedCount, isIOS };
+      }
+
       convertBtn.addEventListener('click', convert);
 
       async function convert() {
@@ -2630,19 +2686,33 @@
         }
       }
 
+      /* ============================================================
+       * ✅ 仅替换 demo.png，按格式决定保留哪一个
+       * ============================================================ */
       replaceDemoOnlyBtn.addEventListener('click', async function() {
         const filesToProcess = getFilesToProcess();
         if (!filesToProcess || filesToProcess.length === 0) { alert('请先上传皮肤包'); return; }
         if (!customDemoBlob) { alert('请先选择替换图片'); return; }
+
+        replaceDemoOnlyBtn.disabled = true;
+        const oldBtnText = replaceDemoOnlyBtn.textContent;
+        replaceDemoOnlyBtn.textContent = '⏳ 替换中...';
         clearLog();
-        log('🖼️ 开始仅替换demo.png');
+        log('🖼️ 开始仅替换 demo.png（按格式决定保留位置，其他路径完全不动）');
+
+        // ---------- 单文件 ----------
         if (filesToProcess.length === 1) {
           const file = filesToProcess[0];
           try {
             const ab = await file.arrayBuffer();
             const zip = await JSZip.loadAsync(ab);
-            const outZip = await processZipCommon(zip);
-            let outBlob = await outZip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+            const { zip: outZip, replacedCount, removedCount, isIOS } = await processZipReplaceDemoOnly(zip);
+
+            let outBlob = await outZip.generateAsync({
+              type: 'blob', compression: 'DEFLATE',
+              compressionOptions: { level: 6 }
+            });
+
             let finalFile = new File([outBlob], file.name);
             if (savedMarkContent) {
               const items = parseMarkInput(savedMarkContent);
@@ -2652,24 +2722,41 @@
                 log('🔒 替换demo后强制保留标记: ' + savedMarkContent);
               }
             }
+
             const outName = applyTimeStampToName(finalFile.name);
             saveAs(outBlob, outName);
             setSharedFiles([new File([outBlob], outName)], '替换demo');
-            log('✅ 替换demo成功，已暂存到“继续编辑”池: ' + outName);
+
+            log(`✅ 替换完成：${isIOS ? 'iOS' : '安卓'} 包，替换 ${replacedCount} 处 demo.png` +
+                (removedCount > 0 ? `，移除多余 ${removedCount} 处 demo.png` : '') +
+                '，其他路径未改动');
+            log('📥 已暂存到“继续编辑”池: ' + outName);
           } catch (err) {
             log('❌ ' + file.name + ' 失败: ' + err.message);
             alert('替换失败: ' + err.message);
+          } finally {
+            replaceDemoOnlyBtn.disabled = false;
+            replaceDemoOnlyBtn.textContent = oldBtnText;
           }
           return;
         }
+
+        // ---------- 多文件 ----------
         const resultZip = new JSZip();
+        let successCount = 0, failCount = 0;
+
         for (let idx = 0; idx < filesToProcess.length; idx++) {
           const file = filesToProcess[idx];
           try {
             const ab = await file.arrayBuffer();
             const zip = await JSZip.loadAsync(ab);
-            const outZip = await processZipCommon(zip);
-            let outBlob = await outZip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+            const { zip: outZip, replacedCount, removedCount, isIOS } = await processZipReplaceDemoOnly(zip);
+
+            let outBlob = await outZip.generateAsync({
+              type: 'blob', compression: 'DEFLATE',
+              compressionOptions: { level: 6 }
+            });
+
             let finalFile = new File([outBlob], file.name);
             if (savedMarkContent) {
               const items = parseMarkInput(savedMarkContent);
@@ -2677,18 +2764,38 @@
                 finalFile = await markFileWithCamouflage(finalFile, items);
               }
             }
+
             const timeStampedName = applyTimeStampToName(finalFile.name);
             resultZip.file(timeStampedName, finalFile);
-            log('✅ [' + (idx + 1) + '/' + filesToProcess.length + '] 替换demo成功: ' + timeStampedName);
+            successCount++;
+            log(`✅ [${idx + 1}/${filesToProcess.length}] ${file.name} → ${isIOS ? 'iOS' : '安卓'} 包替换 ${replacedCount} 处` +
+                (removedCount > 0 ? `，移除多余 ${removedCount} 处` : ''));
           } catch (err) {
-            log('❌ [' + (idx + 1) + '/' + filesToProcess.length + '] ' + file.name + ' 失败: ' + err.message);
+            failCount++;
+            log(`❌ [${idx + 1}/${filesToProcess.length}] ${file.name} 失败: ${err.message}`);
           }
         }
-        const outBlob = await resultZip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
-        const outZipName = '仅替换demo_' + filesToProcess.length + '个文件.zip';
-        saveAs(outBlob, outZipName);
-        setSharedFiles([new File([outBlob], outZipName)], '批量替换demo');
-        log('✅ 完成，已暂存到共享池');
+
+        try {
+          if (successCount === 0) {
+            alert('所有文件处理失败');
+          } else {
+            const outBlob = await resultZip.generateAsync({
+              type: 'blob', compression: 'DEFLATE',
+              compressionOptions: { level: 6 }
+            });
+            const outZipName = '仅替换demo_' + successCount + '个文件.zip';
+            saveAs(outBlob, outZipName);
+            setSharedFiles([new File([outBlob], outZipName)], '批量替换demo');
+            log(`✅ 批量完成，成功 ${successCount}，失败 ${failCount}`);
+          }
+        } catch (err) {
+          log('❌ 打包下载失败: ' + err.message);
+          alert('打包下载失败: ' + err.message);
+        } finally {
+          replaceDemoOnlyBtn.disabled = false;
+          replaceDemoOnlyBtn.textContent = oldBtnText;
+        }
       });
 
       extractAudioBtn.addEventListener('click', async function() {
@@ -3364,7 +3471,6 @@
         return localHeaders;
       }
 
-      // ===== 以下为按第二个工具替换后的“统一伪加密”实现 =====
       function getPseudoFlagsByExt(ext) {
         if (ext === '.bds') return { local: 0x0000, central: 0x0009 };
         return { local: 0x0001, central: 0x0001 };
@@ -3395,7 +3501,6 @@
         }
         return { data: result, lhCount, cdCount };
       }
-      // ===== 替换结束 =====
 
       function pseudoDecrypt(data) {
         const result = new Uint8Array(data);
